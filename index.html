@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jf.hobby</title>
+<link rel="icon" href="logo.svg">
+<script>(function(){var p=localStorage.getItem('jf-theme')||'auto';document.documentElement.dataset.theme=(p==='dark'||(p==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light';})();</script>
+<link rel="stylesheet" href="../jf-core/core.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../jf-core/core.js"></script>
+<script src="lib.js"></script>
+<style>
+:root{--accent:#7c3aed;--tint:rgba(124,58,237,.12)}
+[data-theme=dark]{--accent:#a78bfa;--tint:rgba(167,139,250,.15);--onacc:#1d0b3d}
+#app{min-height:100vh}
+main{max-width:1180px;margin:0 auto;padding:34px 22px 70px}
+.hero{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+.hero h1{font-size:32px;letter-spacing:-.025em;font-weight:750;line-height:1.1}
+.hero h1 span{background:linear-gradient(90deg,#ff4fa3,#8b5cf6,#3b82f6,#22c55e,#eab308,#f97316);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);margin-top:6px;font-size:15px}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:38px}
+.tool{text-decoration:none;color:inherit;position:relative;border-radius:18px;padding:18px 16px 16px;background:var(--panel);border:1px solid var(--line);cursor:pointer;overflow:hidden;text-align:left;display:flex;flex-direction:column;gap:10px;min-height:168px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.tool:hover{transform:translateY(-2px);border-color:var(--c);box-shadow:0 10px 28px -12px var(--c)}
+.tool .ic{width:46px;height:46px;border-radius:13px;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center}
+.tool .ic svg{width:24px;height:24px}
+.tool b{font-size:17px;letter-spacing:-.01em}
+.tool small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.tool .new{margin-top:auto;font-size:12px;font-weight:650;color:var(--c)}
+.tool::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:var(--c);opacity:.08}
+.sec{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.sec h2{font-size:19px;letter-spacing:-.01em;flex:1}
+#search{width:230px;height:36px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{height:30px;border-radius:999px;border:1px solid var(--line);background:var(--panel);padding:0 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.tabs button.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tabs i{width:8px;height:8px;border-radius:50%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;position:relative;text-align:left;padding:0;display:flex;flex-direction:column}
+.card:hover{border-color:var(--muted)}
+.card .th{aspect-ratio:16/10;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--line)}
+.card .th img{width:100%;height:100%;object-fit:cover;display:block}
+.card .th.px img{image-rendering:pixelated;object-fit:contain}
+.card .th .ph{width:54px;height:54px;border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center}
+.card .th .ph svg{width:28px;height:28px}
+.card .inf{padding:10px 12px 12px;display:flex;flex-direction:column;gap:3px}
+.card .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:26px}
+.card .mt{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.card .mt i{width:8px;height:8px;border-radius:50%}
+.card .more{position:absolute;right:8px;bottom:12px;width:28px;height:26px;border:0;background:none;border-radius:7px;font-size:17px;line-height:1;color:var(--muted)}
+.card .more:hover{background:var(--hover);color:var(--text)}
+.ctx{position:fixed;z-index:150;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:190px;box-shadow:0 14px 36px rgba(0,0,0,.2)}
+.ctx button{display:flex;width:100%;text-align:left;background:none;border:0;padding:8px 10px;border-radius:8px;font-size:13px}
+.ctx button:hover{background:var(--hover)}
+.ctx button.danger{color:var(--danger)}
+.welcome{background:linear-gradient(120deg,rgba(255,79,163,.12),rgba(139,92,246,.12),rgba(59,130,246,.1));border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:26px;font-size:14px;color:var(--muted);display:flex;gap:14px;align-items:center}
+.welcome b{color:var(--text)}
+.welcome button{margin-left:auto}
+@media(max-width:600px){.hero h1{font-size:26px}#search{width:100%}}
+</style>
+</head>
+<body>
+<div class="boot" id="boot"></div>
+<div id="app" class="jf-hidden">
+  <div id="hdr"></div>
+  <main>
+    <div class="hero"><div><h1 id="hello">Wat ga je <span>maken</span>?</h1><p>Kies een tool en begin meteen. Alles wordt automatisch in je account opgeslagen.</p></div></div>
+    <div class="tools" id="tools"></div>
+    <div class="welcome hidden" id="welcome"><div><b>Tip:</b> teken een personage in <b>Pixel</b> en gebruik het daarna als speler in <b>Game</b>. Je projecten staan ook in jf.drive in de map <b>jimcreation</b>.</div><button class="icon-btn" id="hideTip">Oke</button></div>
+    <div class="sec"><h2>Je projecten</h2><input class="inp" id="search" placeholder="Zoeken..." autocomplete="off"></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="grid" id="list"><div class="empty">Laden...</div></div>
+  </main>
+</div>
+<script>
+const $ = JF.$, esc = JF.esc;
+let items = [], filter = 'all';
+$('hdr').innerHTML = JC.header(null);
+$('tools').innerHTML = JC.tools.map(t => '<a class="tool" href="' + t.url + '" style="--c:' + t.color + '"><span class="ic">' + JC.ico[t.key] + '</span><b>' + t.name + '</b><small>' + t.desc + '</small><span class="new">+ Nieuw ' + (t.key === 'cad' ? '3D' : t.name.toLowerCase()) + '-project</span></a>').join('');
+function tabs() {
+  $('tabs').innerHTML = '<button data-f="all" class="' + (filter === 'all' ? 'on' : '') + '">Alles</button>' + JC.tools.map(t => '<button data-f="' + t.key + '" class="' + (filter === t.key ? 'on' : '') + '"><i style="background:' + t.color + '"></i>' + t.name + '</button>').join('');
+}
+$('tabs').onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; filter = b.dataset.f; tabs(); render(); };
+function render() {
+  const q = $('search').value.trim().toLowerCase();
+  const l = items.filter(x => JC.tool(x.type) && (filter === 'all' || x.type === filter) && (!q || (x.title || '').toLowerCase().includes(q)));
+  if (!l.length) { $('list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + (q ? 'Niets gevonden' : 'Nog geen projecten') + '</b>' + (q ? 'Geen project heeft "' + esc(q) + '" in de naam.' : 'Kies hierboven een tool om je eerste project te maken.') + '</div>'; return; }
+  $('list').innerHTML = l.map(x => { const t = JC.tool(x.type); return '<div class="card" data-id="' + esc(x.id) + '" tabindex="0"><div class="th' + (x.type === 'pixel' ? ' px' : '') + '">' + (x.thumb ? '<img src="' + esc(x.thumb) + '" alt="">' : '<span class="ph" style="background:' + t.color + '">' + JC.ico[t.key] + '</span>') + '</div><div class="inf"><span class="nm">' + esc(x.title || 'Naamloos') + '</span><span class="mt"><i style="background:' + t.color + '"></i>' + t.name + ' · ' + JF.when(x.updated) + '</span></div><button class="more" title="Meer" aria-label="Meer">⋯</button></div>'; }).join('');
+}
+function open(x) { location.href = JC.tool(x.type).url + '?id=' + encodeURIComponent(x.id); }
+function closeCtx() { document.querySelectorAll('.ctx').forEach(c => c.remove()); }
+$('list').addEventListener('click', e => {
+  const c = e.target.closest('.card'); if (!c) return; const x = items.find(i => i.id === c.dataset.id); if (!x) return;
+  if (e.target.closest('.more')) { e.stopPropagation(); menu(x, e.clientX, e.clientY); return; }
+  open(x);
+});
+$('list').addEventListener('contextmenu', e => { const c = e.target.closest('.card'); if (!c) return; e.preventDefault(); const x = items.find(i => i.id === c.dataset.id); if (x) menu(x, e.clientX, e.clientY); });
+$('list').addEventListener('keydown', e => { if (e.key === 'Enter') { const c = e.target.closest('.card'); const x = c && items.find(i => i.id === c.dataset.id); if (x) open(x); } });
+function menu(x, cx, cy) {
+  closeCtx(); const m = document.createElement('div'); m.className = 'ctx';
+  m.innerHTML = '<button data-a="open">Openen</button><button data-a="rename">Naam wijzigen</button><button data-a="dup">Dupliceren</button><button data-a="del" class="danger">Verwijderen</button>';
+  document.body.appendChild(m);
+  m.style.left = Math.min(cx, innerWidth - m.offsetWidth - 8) + 'px'; m.style.top = Math.min(cy, innerHeight - m.offsetHeight - 8) + 'px';
+  m.onclick = async ev => {
+    const a = ev.target.closest('[data-a]'); if (!a) return; closeCtx();
+    try {
+      if (a.dataset.a === 'open') open(x);
+      if (a.dataset.a === 'rename') { const n = prompt('Nieuwe naam:', x.title || ''); if (n && n.trim()) { await JC.rename(x.type, x.id, n.trim()); await load(); } }
+      if (a.dataset.a === 'dup') { await JC.duplicate(x); await load(); JF.toast('Gedupliceerd'); }
+      if (a.dataset.a === 'del') { if (confirm('"' + (x.title || 'Naamloos') + '" verwijderen? Dit kan niet ongedaan worden.')) { await JC.remove(x.type, x.id); await load(); JF.toast('Verwijderd'); } }
+    } catch (err) { alert('Dat lukte niet: ' + JF.vertaal(err && err.message)); }
+  };
+}
+document.addEventListener('click', e => { if (!e.target.closest('.ctx')) closeCtx(); });
+$('search').oninput = render;
+$('hideTip').onclick = () => { $('welcome').classList.add('hidden'); try { localStorage.setItem('jc-tip', '1'); } catch (e) {} };
+async function load() { items = (await JC.list()).slice().sort((a, b) => (b.updated || '').localeCompare(a.updated || '')); render(); }
+JC.start({
+  onOpen() {
+    const h = new Date().getHours(), n = JC.displayName();
+    $('hello').innerHTML = (h < 6 ? 'Goedenacht' : h < 12 ? 'Goedemorgen' : h < 18 ? 'Goedemiddag' : 'Goedenavond') + (n ? ', ' + esc(n) : '') + '. Wat ga je <span>maken</span>?';
+    let tip = null; try { tip = localStorage.getItem('jc-tip'); } catch (e) {}
+    $('welcome').classList.toggle('hidden', !!tip);
+    tabs(); load();
+  }
+});
+window.addEventListener('focus', () => { if (JF.user) load(); });
+</script>
+</body>
+</html>
