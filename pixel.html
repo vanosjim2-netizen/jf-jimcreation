@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel · jf.hobby</title>
+<link rel="icon" href="logo.svg">
+<script>(function(){var p=localStorage.getItem('jf-theme')||'auto';document.documentElement.dataset.theme=(p==='dark'||(p==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light';})();</script>
+<link rel="stylesheet" href="../jf-core/core.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../jf-core/core.js"></script>
+<script src="lib.js"></script>
+<style>
+:root{--accent:#2563eb;--tint:rgba(37,99,235,.12);--stage:#d9dce3}
+[data-theme=dark]{--accent:#60a5fa;--tint:rgba(96,165,250,.15);--onacc:#06173a;--stage:#0e0f12}
+#app{height:100vh;display:grid;grid-template-rows:56px 1fr 96px;overflow:hidden}
+.main{display:grid;grid-template-columns:58px minmax(0,1fr) 240px;min-height:0}
+.tools{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:3px;overflow-y:auto}
+.tools button{width:42px;height:42px;border:0;background:none;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted);position:relative}
+.tools button svg{width:21px;height:21px}
+.tools button:hover{background:var(--hover);color:var(--text)}
+.tools button.on{background:var(--tint);color:var(--accent)}
+.tools hr{width:30px;border:0;border-top:1px solid var(--line);margin:4px 0}
+.tools .k{position:absolute;right:3px;bottom:2px;font-size:8.5px;font-weight:700;opacity:.55}
+.colors{position:relative;width:44px;height:48px;margin-top:6px}
+.colors .c{position:absolute;width:28px;height:28px;border-radius:7px;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.colors .c1{left:2px;top:2px;z-index:2}
+.colors .c2{left:14px;top:16px}
+.stage{position:relative;overflow:auto;background:var(--stage);display:flex;min-width:0;min-height:0}
+.stage .inner{margin:auto;padding:40px;position:relative}
+#cv{display:block;image-rendering:pixelated;background-color:#fff;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%);box-shadow:0 6px 30px rgba(0,0,0,.25);cursor:crosshair;touch-action:none}
+.sinfo{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-variant-numeric:tabular-nums;pointer-events:none}
+.side{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:14px}
+.side h3{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 9px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:6px}
+.side h3 span{flex:1}
+.side section{margin-bottom:18px}
+.pal{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
+.pal button{aspect-ratio:1;border:0;border-radius:4px;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.pal button.on{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--accent);z-index:1}
+.pal .add{background:var(--bg);color:var(--muted);font-size:16px;box-shadow:inset 0 0 0 1px var(--line)}
+.row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px}
+.row span{flex:1}
+.row input[type=range]{width:100px;accent-color:var(--accent)}
+.tb{height:30px;min-width:30px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:0 9px;font-size:12.5px}
+.tb:hover{border-color:var(--accent)}
+.tb.on{background:var(--tint);color:var(--accent);border-color:var(--accent)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.prev{width:100%;aspect-ratio:1;background:repeating-conic-gradient(#d4d4d8 0 25%,#fff 0 50%) 0 0/16px 16px;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line)}
+.prev canvas{image-rendering:pixelated;max-width:90%;max-height:90%}
+.frames{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:var(--panel);overflow-x:auto}
+.fr{flex:0 0 auto;width:68px;height:68px;border-radius:9px;border:2px solid var(--line);background:repeating-conic-gradient(#e4e4e7 0 25%,#fff 0 50%) 0 0/10px 10px;padding:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.fr.on{border-color:var(--accent)}
+.fr canvas{image-rendering:pixelated;max-width:60px;max-height:60px}
+.fr em{position:absolute;left:3px;top:2px;font-size:10px;font-style:normal;font-weight:700;background:rgba(0,0,0,.55);color:#fff;border-radius:4px;padding:0 4px}
+.fbtns{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.play{width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:var(--onacc);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.play svg{width:18px;height:18px}
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 14px}
+.sizes button{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:14px 6px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px}
+.sizes button small{font-weight:500;color:var(--muted);font-size:11px}
+.sizes button:hover{border-color:var(--accent);background:var(--tint)}
+@media(max-width:820px){.main{grid-template-columns:52px minmax(0,1fr) 0}.side{display:none}}
+</style>
+</head>
+<body>
+<div class="boot" id="boot"></div>
+<div id="app" class="jf-hidden">
+  <div id="hdr"></div>
+  <div class="main">
+    <nav class="tools" id="tools"></nav>
+    <section class="stage" id="stage"><div class="inner"><canvas id="cv"></canvas></div><div class="sinfo" id="sinfo"></div></section>
+    <aside class="side" id="side">
+      <section><h3><span>Kleuren</span><select id="palSel" class="tb" style="height:26px;font-size:11px"></select></h3><div class="pal" id="pal"></div><div class="row" style="margin-top:10px"><span>Eigen kleur</span><input type="color" id="pick"></div></section>
+      <section><h3><span>Penseel</span></h3>
+        <div class="row"><span>Dikte</span><input type="range" id="brush" min="1" max="6" value="1"><b id="brushV" style="width:16px">1</b></div>
+        <div class="row"><span>Spiegelen</span><button class="tb" id="mirX" title="Links en rechts tegelijk tekenen">↔</button><button class="tb" id="mirY" title="Boven en onder tegelijk tekenen">↕</button></div>
+        <div class="row"><span>Vormen vullen</span><button class="tb" id="fillShapes">Uit</button></div>
+      </section>
+      <section><h3><span>Weergave</span></h3>
+        <div class="row"><span>Raster</span><button class="tb on" id="gridBtn">Aan</button></div>
+        <div class="row"><span>Uienschil</span><button class="tb" id="onionBtn" title="Laat het vorige frame doorschemeren">Uit</button></div>
+        <div class="row"><span>Zoom</span><button class="tb" id="zDn">−</button><b id="zV" style="min-width:34px;text-align:center;font-size:12px"></b><button class="tb" id="zUp">+</button></div>
+      </section>
+      <section><h3><span>Frame</span></h3><div class="g2"><button class="tb" data-fa="flipH">↔ Spiegelen</button><button class="tb" data-fa="flipV">↕ Spiegelen</button><button class="tb" data-fa="rot">↻ Draaien</button><button class="tb" data-fa="outline">Rand eromheen</button><button class="tb" data-fa="clear">Leegmaken</button><button class="tb" data-fa="resize">Formaat</button></div></section>
+      <section><h3><span>Voorbeeld</span><b id="fpsV" style="text-transform:none;font-weight:600">8 fps</b></h3><div class="prev"><canvas id="pv"></canvas></div><div class="row" style="margin-top:8px"><span>Snelheid</span><input type="range" id="fps" min="1" max="24" value="8"></div></section>
+    </aside>
+  </div>
+  <div class="frames" id="framesBar"><button class="play" id="play" title="Animatie afspelen"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg></button><div style="display:flex;gap:8px" id="frames"></div><div class="fbtns"><button class="tb" id="addFr" title="Nieuw leeg frame">+ Frame</button><button class="tb" id="dupFr" title="Huidig frame kopiëren">Kopie</button></div><div class="fbtns"><button class="tb" id="delFr" title="Frame verwijderen">Verwijderen</button><div style="display:flex;gap:4px"><button class="tb" id="frL" title="Naar links">←</button><button class="tb" id="frR" title="Naar rechts">→</button></div></div></div>
+</div>
+<script>
+'use strict';
+const $ = JF.$, esc = JF.esc, uid = JF.uid;
+const PALETTES = {
+  pico: ['#000000', '#1d2b53', '#7e2553', '#008751', '#ab5236', '#5f574f', '#c2c3c7', '#fff1e8', '#ff004d', '#ffa300', '#ffec27', '#00e436', '#29adff', '#83769c', '#ff77a8', '#ffccaa'],
+  endesga: ['#be4a2f', '#d77643', '#ead4aa', '#e4a672', '#b86f50', '#733e39', '#3e2731', '#a22633', '#e43b44', '#f77622', '#feae34', '#fee761', '#63c74d', '#3e8948', '#265c42', '#193c3e', '#124e89', '#0099db', '#2ce8f5', '#ffffff', '#c0cbdc', '#8b9bb4', '#5a6988', '#3a4466', '#262b44', '#181425', '#ff0044', '#68386c', '#b55088', '#f6757a', '#e8b796', '#c28569'],
+  gameboy: ['#0f380f', '#306230', '#8bac0f', '#9bbc0f'],
+  nes: ['#000000', '#fcfcfc', '#f8f8f8', '#bcbcbc', '#7c7c7c', '#a4e4fc', '#3cbcfc', '#0078f8', '#0000fc', '#b8b8f8', '#6888fc', '#0058f8', '#d8b8f8', '#9878f8', '#6844fc', '#f8b8f8', '#f878f8', '#d800cc', '#f8a4c0', '#f85898', '#e40058', '#f0d0b0', '#f87858', '#f83800', '#fce0a8', '#fca044', '#e45c10', '#f8d878', '#f8b800', '#ac7c00', '#d8f878', '#b8f818', '#00b800', '#b8f8b8', '#58d854', '#00a800', '#b8f8d8', '#58f898', '#00a844', '#00fcfc', '#00e8d8', '#008888'],
+  pastel: ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#fffffc', '#594f4f', '#45ada8', '#9de0ad', '#e5fcc2', '#f9a1bc', '#6a4c93', '#1982c4']
+};
+const PALN = { pico: 'PICO-8', endesga: 'Endesga 32', gameboy: 'Game Boy', nes: 'NES', pastel: 'Pastel', mine: 'Eigen' };
+const TOOLS = [
+  ['pen', 'B', 'Potlood', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20l1-5L16 4l4 4L9 19z"/><path d="M14 6l4 4"/></svg>'],
+  ['eraser', 'E', 'Gum', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 20h12M5 15l9-9 5 5-8 8H8z"/></svg>'],
+  ['fill', 'G', 'Emmer (Shift: zelfde kleur overal)', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 11l7-7 7 7-7 7z"/><path d="M19 15s2 2.5 2 4a2 2 0 01-4 0c0-1.5 2-4 2-4z" fill="currentColor"/></svg>'],
+  ['line', 'L', 'Lijn', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 19L19 5"/></svg>'],
+  ['rect', 'R', 'Rechthoek', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>'],
+  ['circle', 'O', 'Cirkel', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>'],
+  ['pick', 'I', 'Pipet', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 4l6 6-2 2-6-6zM12 8l-8 8v4h4l8-8"/></svg>'],
+  ['move', 'M', 'Verschuiven', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>'],
+  ['dither', 'D', 'Ruitjespatroon', '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="4" height="4"/><rect x="12" y="4" width="4" height="4"/><rect x="8" y="8" width="4" height="4"/><rect x="16" y="8" width="4" height="4"/><rect x="4" y="12" width="4" height="4"/><rect x="12" y="12" width="4" height="4"/><rect x="8" y="16" width="4" height="4"/><rect x="16" y="16" width="4" height="4"/></svg>']
+];
+let P = null, cur = 0, tool = 'pen', c1 = '#000000', c2 = '#00000000', brush = 1, mirX = false, mirY = false, fillShapes = false, showGrid = true, onion = false, zoom = 16;
+let frames = []; // canvassen
+const cv = $('cv'), ctx = cv.getContext('2d');
+
+/* ---------- frames ---------- */
+function newCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function loadFrames() {
+  return Promise.all(P.frames.map(src => new Promise(res => { const c = newCanvas(P.w, P.h); if (!src) return res(c); const i = new Image(); i.onload = () => { c.getContext('2d').drawImage(i, 0, 0); res(c); }; i.onerror = () => res(c); i.src = src; }))).then(l => { frames = l; });
+}
+const F = () => frames[cur];
+const FX = () => F().getContext('2d', { willReadFrequently: true });
+function saveFrame(i) { P.frames[i == null ? cur : i] = frames[i == null ? cur : i].toDataURL('image/png'); }
+const H = JC.undo(() => P, s => { P = s; cur = Math.min(cur, P.frames.length - 1); loadFrames().then(() => { draw(); renderFrames(); }); JC.changed(); });
+function commit() { saveFrame(); H.push(); JC.changed(); renderFrames(); }
+
+/* ---------- tekenen op het scherm ---------- */
+function setZoom(z) { zoom = Math.max(1, Math.min(64, z)); cv.width = P.w * zoom; cv.height = P.h * zoom; cv.style.backgroundSize = Math.max(8, zoom * 2) + 'px ' + Math.max(8, zoom * 2) + 'px'; cv.style.backgroundPosition = '0 0,' + Math.max(4, zoom) + 'px ' + Math.max(4, zoom) + 'px'; $('zV').textContent = zoom + 'x'; draw(); }
+function fitZoom() { const s = $('stage'); setZoom(Math.max(1, Math.floor(Math.min((s.clientWidth - 80) / P.w, (s.clientHeight - 80) / P.h)))); }
+let preview = null, hover = null;
+function draw() {
+  ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, cv.width, cv.height);
+  if (onion && cur > 0) { ctx.globalAlpha = 0.28; ctx.drawImage(frames[cur - 1], 0, 0, cv.width, cv.height); ctx.globalAlpha = 1; }
+  ctx.drawImage(preview || F(), 0, 0, cv.width, cv.height);
+  if (showGrid && zoom >= 6) {
+    ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 1; x < P.w; x++) { ctx.moveTo(x * zoom + 0.5, 0); ctx.lineTo(x * zoom + 0.5, cv.height); }
+    for (let y = 1; y < P.h; y++) { ctx.moveTo(0, y * zoom + 0.5); ctx.lineTo(cv.width, y * zoom + 0.5); }
+    ctx.stroke();
+    if (P.w >= 16) { ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); const st = P.w >= 64 ? 16 : 8; for (let x = st; x < P.w; x += st) { ctx.moveTo(x * zoom + 0.5, 0); ctx.lineTo(x * zoom + 0.5, cv.height); } for (let y = st; y < P.h; y += st) { ctx.moveTo(0, y * zoom + 0.5); ctx.lineTo(cv.width, y * zoom + 0.5); } ctx.stroke(); }
+  }
+  if (mirX) { ctx.strokeStyle = 'rgba(37,99,235,.7)'; ctx.beginPath(); ctx.moveTo(cv.width / 2, 0); ctx.lineTo(cv.width / 2, cv.height); ctx.stroke(); }
+  if (mirY) { ctx.strokeStyle = 'rgba(37,99,235,.7)'; ctx.beginPath(); ctx.moveTo(0, cv.height / 2); ctx.lineTo(cv.width, cv.height / 2); ctx.stroke(); }
+  if (hover && !drag && ['pen', 'eraser', 'dither'].includes(tool)) { ctx.strokeStyle = 'rgba(37,99,235,.9)'; ctx.lineWidth = 1.5; const o = Math.floor((brush - 1) / 2); ctx.strokeRect((hover.x - o) * zoom + 0.75, (hover.y - o) * zoom + 0.75, brush * zoom - 1.5, brush * zoom - 1.5); }
+  $('sinfo').textContent = P.w + ' × ' + P.h + (hover ? ' · ' + hover.x + ', ' + hover.y : '') + ' · frame ' + (cur + 1) + '/' + frames.length;
+}
+
+/* ---------- pixels ---------- */
+function hexToRGBA(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h.slice(0, 6), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255, h.length === 8 ? parseInt(h.slice(6), 16) : 255]; }
+const rgbaHex = (r, g, b, a) => a < 128 ? '#00000000' : '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+let img = null; // ImageData tijdens tekenen
+function plot(x, y, col, pat) {
+  const pts = [[x, y]]; if (mirX) pts.push([P.w - 1 - x, y]); if (mirY) pts.push([x, P.h - 1 - y]); if (mirX && mirY) pts.push([P.w - 1 - x, P.h - 1 - y]);
+  const o = Math.floor((brush - 1) / 2);
+  pts.forEach(([px, py]) => { for (let dy = 0; dy < brush; dy++) for (let dx = 0; dx < brush; dx++) { const X = px - o + dx, Y = py - o + dy; if (X < 0 || Y < 0 || X >= P.w || Y >= P.h) continue; if (pat && (X + Y) % 2) continue; const i = (Y * P.w + X) * 4; img.data[i] = col[0]; img.data[i + 1] = col[1]; img.data[i + 2] = col[2]; img.data[i + 3] = col[3]; } });
+}
+function line(x0, y0, x1, y1, fn) { const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy; for (;;) { fn(x0, y0); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e; if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } } }
+function rectPts(x0, y0, x1, y1, filled, fn) { const a = Math.min(x0, x1), b = Math.max(x0, x1), c = Math.min(y0, y1), d = Math.max(y0, y1); for (let y = c; y <= d; y++) for (let x = a; x <= b; x++) if (filled || x === a || x === b || y === c || y === d) fn(x, y); }
+function ellipsePts(x0, y0, x1, y1, filled, fn) {
+  const a = Math.min(x0, x1), b = Math.max(x0, x1), c = Math.min(y0, y1), d = Math.max(y0, y1), cx = (a + b) / 2, cy = (c + d) / 2, rx = (b - a) / 2 + 0.5, ry = (d - c) / 2 + 0.5;
+  const inside = (x, y) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+  for (let y = c; y <= d; y++) for (let x = a; x <= b; x++) { if (!inside(x, y)) continue; if (filled || !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)) fn(x, y); }
+}
+function floodFill(x, y, col, global) {
+  const d = img.data, W = P.w, Hh = P.h, i0 = (y * W + x) * 4, t = [d[i0], d[i0 + 1], d[i0 + 2], d[i0 + 3]];
+  const same = i => d[i + 3] === 0 && t[3] === 0 ? true : d[i] === t[0] && d[i + 1] === t[1] && d[i + 2] === t[2] && d[i + 3] === t[3];
+  if (t.every((v, k) => v === col[k])) return;
+  if (global) { for (let i = 0; i < d.length; i += 4) if (same(i)) { d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = col[3]; } return; }
+  const st = [[x, y]], seen = new Uint8Array(W * Hh);
+  while (st.length) { const [px, py] = st.pop(); if (px < 0 || py < 0 || px >= W || py >= Hh) continue; const k = py * W + px; if (seen[k]) continue; seen[k] = 1; const i = k * 4; if (!same(i)) continue; d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = col[3]; st.push([px + 1, py], [px - 1, py], [px, py + 1], [px, py - 1]); }
+}
+
+/* ---------- muis ---------- */
+let drag = null;
+function cell(e) { const r = cv.getBoundingClientRect(); return { x: Math.floor((e.clientX - r.left) / r.width * P.w), y: Math.floor((e.clientY - r.top) / r.height * P.h) }; }
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => {
+  if (playing) togglePlay();
+  e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  const p = cell(e), right = e.button === 2, col = hexToRGBA(tool === 'eraser' ? '#00000000' : right ? c2 : c1);
+  img = FX().getImageData(0, 0, P.w, P.h);
+  if (tool === 'pick') { const i = (p.y * P.w + p.x) * 4; if (p.x >= 0 && p.y >= 0 && p.x < P.w && p.y < P.h) { const h = rgbaHex(img.data[i], img.data[i + 1], img.data[i + 2], img.data[i + 3]); if (right) c2 = h; else c1 = h; renderColors(); if (h !== '#00000000') setTool(prevTool || 'pen'); } return; }
+  if (tool === 'fill') { if (p.x < 0 || p.y < 0 || p.x >= P.w || p.y >= P.h) return; floodFill(p.x, p.y, col, e.shiftKey); FX().putImageData(img, 0, 0); draw(); commit(); return; }
+  drag = { p0: p, last: p, col, base: FX().getImageData(0, 0, P.w, P.h) };
+  if (tool === 'pen' || tool === 'eraser' || tool === 'dither') { plot(p.x, p.y, col, tool === 'dither'); FX().putImageData(img, 0, 0); draw(); }
+});
+cv.addEventListener('pointermove', e => {
+  const p = cell(e); hover = p.x >= 0 && p.y >= 0 && p.x < P.w && p.y < P.h ? p : null;
+  if (!drag) { draw(); return; }
+  if (p.x === drag.last.x && p.y === drag.last.y) return;
+  if (tool === 'pen' || tool === 'eraser' || tool === 'dither') { line(drag.last.x, drag.last.y, p.x, p.y, (x, y) => plot(x, y, drag.col, tool === 'dither')); FX().putImageData(img, 0, 0); }
+  else if (tool === 'line' || tool === 'rect' || tool === 'circle') {
+    img = new ImageData(new Uint8ClampedArray(drag.base.data), P.w, P.h);
+    let q = p; if (e.shiftKey && tool !== 'line') { const s = Math.max(Math.abs(p.x - drag.p0.x), Math.abs(p.y - drag.p0.y)); q = { x: drag.p0.x + Math.sign(p.x - drag.p0.x || 1) * s, y: drag.p0.y + Math.sign(p.y - drag.p0.y || 1) * s }; }
+    const fn = (x, y) => plot(x, y, drag.col);
+    if (tool === 'line') line(drag.p0.x, drag.p0.y, q.x, q.y, fn); else if (tool === 'rect') rectPts(drag.p0.x, drag.p0.y, q.x, q.y, fillShapes, fn); else ellipsePts(drag.p0.x, drag.p0.y, q.x, q.y, fillShapes, fn);
+    FX().putImageData(img, 0, 0);
+  } else if (tool === 'move') {
+    const dx = p.x - drag.p0.x, dy = p.y - drag.p0.y; const c = FX(); c.clearRect(0, 0, P.w, P.h); const t = newCanvas(P.w, P.h); t.getContext('2d').putImageData(drag.base, 0, 0); c.drawImage(t, dx, dy);
+  }
+  drag.last = p; draw();
+});
+cv.addEventListener('pointerup', () => { if (!drag) return; drag = null; img = null; commit(); draw(); });
+cv.addEventListener('pointerleave', () => { hover = null; draw(); });
+$('stage').addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); setZoom(zoom + (e.deltaY < 0 ? (zoom >= 8 ? 2 : 1) : -(zoom > 8 ? 2 : 1))); }, { passive: false });
+
+/* ---------- gereedschap en kleuren ---------- */
+let prevTool = 'pen';
+function renderTools() {
+  $('tools').innerHTML = TOOLS.map(t => '<button data-tool="' + t[0] + '" class="' + (tool === t[0] ? 'on' : '') + '" title="' + t[2] + ' (' + t[1] + ')">' + t[3] + '<span class="k">' + t[1] + '</span></button>').join('') + '<hr><button id="undoB" title="Ongedaan maken (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button><button id="redoB" title="Opnieuw (Ctrl+Y)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 000 10h3"/></svg></button><div class="colors" title="Linkermuis / rechtermuis (X wisselt)"><button class="c c2" id="col2"></button><button class="c c1" id="col1"></button></div>';
+  renderColors();
+}
+$('tools').addEventListener('click', e => {
+  const b = e.target.closest('[data-tool]'); if (b) return setTool(b.dataset.tool);
+  if (e.target.closest('#undoB')) H.undo(); if (e.target.closest('#redoB')) H.redo();
+  if (e.target.closest('#col1') || e.target.closest('#col2')) { [c1, c2] = [c2, c1]; renderColors(); }
+});
+function setTool(t) { if (t !== 'pick') prevTool = t; tool = t; document.querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t)); cv.style.cursor = t === 'move' ? 'move' : t === 'pick' ? 'copy' : 'crosshair'; draw(); }
+const swatchBg = c => c === '#00000000' ? 'repeating-conic-gradient(#ccc 0 25%,#fff 0 50%) 0 0/8px 8px' : c;
+function renderColors() {
+  if ($('col1')) { $('col1').style.background = swatchBg(c1); $('col2').style.background = swatchBg(c2); }
+  if (/^#[0-9a-f]{6}$/i.test(c1)) $('pick').value = c1;
+  if (!P) return;
+  const pal = P.palette;
+  $('pal').innerHTML = pal.map((c, i) => '<button data-c="' + c + '" data-i="' + i + '" class="' + (c === c1 ? 'on' : '') + '" style="background:' + c + '" title="' + c + '"></button>').join('') + '<button class="add" id="addCol" title="Huidige kleur toevoegen">+</button>';
+}
+$('pal').addEventListener('click', e => { if (e.target.id === 'addCol') { if (!P.palette.includes(c1) && c1 !== '#00000000') { P.palette.push(c1); P.palName = 'mine'; renderPalSel(); renderColors(); JC.changed(); } return; } const b = e.target.closest('[data-c]'); if (!b) return; c1 = b.dataset.c; if (tool === 'eraser' || tool === 'pick' || tool === 'move') setTool('pen'); renderColors(); });
+$('pal').addEventListener('contextmenu', e => { const b = e.target.closest('[data-c]'); if (!b) return; e.preventDefault(); c2 = b.dataset.c; renderColors(); });
+$('pal').addEventListener('dblclick', e => { const b = e.target.closest('[data-i]'); if (!b || P.palette.length < 3) return; if (confirm('Deze kleur uit je palet halen?')) { P.palette.splice(+b.dataset.i, 1); P.palName = 'mine'; renderPalSel(); renderColors(); JC.changed(); } });
+$('pick').oninput = e => { c1 = e.target.value; renderColors(); };
+function renderPalSel() { $('palSel').innerHTML = Object.keys(PALN).filter(k => k !== 'mine' || P.palName === 'mine').map(k => '<option value="' + k + '"' + (P.palName === k ? ' selected' : '') + '>' + PALN[k] + '</option>').join(''); }
+$('palSel').onchange = e => { if (e.target.value === 'mine') return; P.palette = PALETTES[e.target.value].slice(); P.palName = e.target.value; c1 = P.palette[0]; renderPalSel(); renderColors(); JC.changed(); };
+$('brush').oninput = e => { brush = +e.target.value; $('brushV').textContent = brush; draw(); };
+const tgl = (id, get, set) => { $(id).onclick = () => { set(!get()); $(id).classList.toggle('on', get()); if ($(id).textContent === 'Aan' || $(id).textContent === 'Uit') $(id).textContent = get() ? 'Aan' : 'Uit'; draw(); }; };
+tgl('mirX', () => mirX, v => mirX = v); tgl('mirY', () => mirY, v => mirY = v); tgl('fillShapes', () => fillShapes, v => fillShapes = v);
+tgl('gridBtn', () => showGrid, v => showGrid = v); tgl('onionBtn', () => onion, v => onion = v);
+$('zUp').onclick = () => setZoom(zoom + (zoom >= 8 ? 2 : 1)); $('zDn').onclick = () => setZoom(zoom - (zoom > 8 ? 2 : 1));
+
+/* ---------- frame-acties ---------- */
+document.querySelector('.side').addEventListener('click', e => {
+  const b = e.target.closest('[data-fa]'); if (!b) return; const a = b.dataset.fa, c = FX(), t = newCanvas(P.w, P.h); t.getContext('2d').drawImage(F(), 0, 0);
+  if (a === 'clear') c.clearRect(0, 0, P.w, P.h);
+  if (a === 'flipH' || a === 'flipV') { c.clearRect(0, 0, P.w, P.h); c.save(); if (a === 'flipH') { c.translate(P.w, 0); c.scale(-1, 1); } else { c.translate(0, P.h); c.scale(1, -1); } c.drawImage(t, 0, 0); c.restore(); }
+  if (a === 'rot') { if (P.w !== P.h) return JF.toast('Draaien werkt alleen bij een vierkant formaat'); c.clearRect(0, 0, P.w, P.h); c.save(); c.translate(P.w, 0); c.rotate(Math.PI / 2); c.drawImage(t, 0, 0); c.restore(); }
+  if (a === 'outline') {
+    const d = c.getImageData(0, 0, P.w, P.h), o = new ImageData(new Uint8ClampedArray(d.data), P.w, P.h), col = hexToRGBA(c1 === '#00000000' ? '#000000' : c1);
+    for (let y = 0; y < P.h; y++) for (let x = 0; x < P.w; x++) { const i = (y * P.w + x) * 4; if (d.data[i + 3]) continue; const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const X = x + dx, Y = y + dy; return X >= 0 && Y >= 0 && X < P.w && Y < P.h && d.data[(Y * P.w + X) * 4 + 3] > 0; }); if (n) { o.data[i] = col[0]; o.data[i + 1] = col[1]; o.data[i + 2] = col[2]; o.data[i + 3] = 255; } }
+    c.putImageData(o, 0, 0);
+  }
+  if (a === 'resize') return resizeModal();
+  draw(); commit();
+});
+function renderFrames() {
+  $('frames').innerHTML = frames.map((f, i) => '<button class="fr' + (i === cur ? ' on' : '') + '" data-fr="' + i + '"><em>' + (i + 1) + '</em></button>').join('');
+  $('frames').querySelectorAll('.fr').forEach((b, i) => { const c = newCanvas(P.w, P.h); c.getContext('2d').drawImage(frames[i], 0, 0); const s = 60 / Math.max(P.w, P.h); c.style.width = P.w * s + 'px'; c.style.height = P.h * s + 'px'; b.appendChild(c); });
+  $('delFr').disabled = frames.length < 2;
+  const sel = $('frames').querySelector('.on'); if (sel) sel.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+$('frames').onclick = e => { const b = e.target.closest('[data-fr]'); if (!b) return; cur = +b.dataset.fr; if (playing) togglePlay(); renderFrames(); draw(); };
+$('addFr').onclick = () => { frames.splice(cur + 1, 0, newCanvas(P.w, P.h)); P.frames.splice(cur + 1, 0, ''); cur++; saveFrame(); H.push(); JC.changed(); renderFrames(); draw(); };
+$('dupFr').onclick = () => { const c = newCanvas(P.w, P.h); c.getContext('2d').drawImage(F(), 0, 0); frames.splice(cur + 1, 0, c); P.frames.splice(cur + 1, 0, ''); cur++; saveFrame(); H.push(); JC.changed(); renderFrames(); draw(); };
+$('delFr').onclick = () => { if (frames.length < 2) return; frames.splice(cur, 1); P.frames.splice(cur, 1); cur = Math.max(0, cur - 1); H.push(); JC.changed(); renderFrames(); draw(); };
+const moveFr = d => { const j = cur + d; if (j < 0 || j >= frames.length) return; [frames[cur], frames[j]] = [frames[j], frames[cur]]; [P.frames[cur], P.frames[j]] = [P.frames[j], P.frames[cur]]; cur = j; H.push(); JC.changed(); renderFrames(); draw(); };
+$('frL').onclick = () => moveFr(-1); $('frR').onclick = () => moveFr(1);
+
+/* ---------- voorbeeld en afspelen ---------- */
+let playing = false, ptimer = null, pidx = 0;
+const pv = $('pv');
+function drawPreview(i) { pv.width = P.w; pv.height = P.h; const s = Math.max(1, Math.floor(200 / Math.max(P.w, P.h))); pv.style.width = P.w * s + 'px'; pv.style.height = P.h * s + 'px'; const x = pv.getContext('2d'); x.clearRect(0, 0, P.w, P.h); x.drawImage(frames[i % frames.length], 0, 0); }
+function tick() { pidx = (pidx + 1) % frames.length; drawPreview(pidx); if (playing && $('playMain')) {} }
+function togglePlay() {
+  playing = !playing; clearInterval(ptimer);
+  $('play').innerHTML = playing ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>';
+  if (playing) { pidx = cur; ptimer = setInterval(() => { pidx = (pidx + 1) % frames.length; drawPreview(pidx); cur = pidx; draw(); document.querySelectorAll('.fr').forEach((b, i) => b.classList.toggle('on', i === cur)); }, 1000 / P.fps); }
+  else { renderFrames(); drawPreview(cur); }
+}
+$('play').onclick = togglePlay;
+$('fps').oninput = e => { P.fps = +e.target.value; $('fpsV').textContent = P.fps + ' fps'; if (playing) { togglePlay(); togglePlay(); } JC.changed(); };
+setInterval(() => { if (!playing && P && frames.length) { pidx = (pidx + 1) % frames.length; if (frames.length > 1) drawPreview(pidx); else drawPreview(0); } }, 125);
+
+/* ---------- formaat ---------- */
+const SIZES = [[16, 16, 'Icoon'], [32, 32, 'Personage'], [64, 64, 'Groot'], [128, 128, 'Tekening'], [16, 32, 'Lang poppetje'], [32, 16, 'Plat'], [48, 48, 'Medium'], [160, 144, 'Game Boy-scherm']];
+function sizeModal() {
+  const m = JC.modal('<h2>Nieuwe pixel-art</h2><p>Hoe groot wordt je tekening? Voor een personage in <b>Game</b> werkt 16 × 16 of 32 × 32 het best.</p><div class="sizes">' + SIZES.map(s => '<button data-w="' + s[0] + '" data-h="' + s[1] + '">' + s[0] + ' × ' + s[1] + '<small>' + s[2] + '</small></button>').join('') + '</div><div style="display:flex;gap:8px;align-items:center"><span class="muted" style="font-size:13px">Eigen:</span><input class="inp" id="sw" type="number" min="4" max="256" value="24" style="width:80px">×<input class="inp" id="sh" type="number" min="4" max="256" value="24" style="width:80px"><button class="btn" id="sgo">Maken</button></div>');
+  let done = false;
+  const go = (w, h) => { done = true; m.close(); P = { w, h, frames: [''], fps: 8, palette: PALETTES.pico.slice(), palName: 'pico' }; boot(); JC.changed(); };
+  m.onclick = e => { const b = e.target.closest('[data-w]'); if (b) go(+b.dataset.w, +b.dataset.h); };
+  m.querySelector('#sgo').onclick = () => go(Math.max(4, Math.min(256, +m.querySelector('#sw').value || 24)), Math.max(4, Math.min(256, +m.querySelector('#sh').value || 24)));
+  m.addEventListener('mousedown', e => { if (e.target === m && !done) setTimeout(() => go(32, 32), 0); });
+}
+function resizeModal() {
+  const m = JC.modal('<h2>Formaat wijzigen</h2><p>Nu ' + P.w + ' × ' + P.h + '. Geldt voor alle frames.</p><div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><input class="inp" id="rw" type="number" min="4" max="256" value="' + P.w + '" style="width:90px">×<input class="inp" id="rh" type="number" min="4" max="256" value="' + P.h + '" style="width:90px"></div><label class="check"><input type="checkbox" id="rs"> Tekening mee schalen (anders bijsnijden of rand erbij)</label><div class="foot"><button class="btn sec" data-close>Annuleren</button><button class="btn" id="rgo">Wijzigen</button></div>');
+  m.querySelector('#rgo').onclick = () => {
+    const w = Math.max(4, Math.min(256, +m.querySelector('#rw').value || P.w)), h = Math.max(4, Math.min(256, +m.querySelector('#rh').value || P.h)), sc = m.querySelector('#rs').checked;
+    frames = frames.map(f => { const c = newCanvas(w, h), x = c.getContext('2d'); x.imageSmoothingEnabled = false; if (sc) x.drawImage(f, 0, 0, w, h); else x.drawImage(f, Math.floor((w - P.w) / 2), Math.floor((h - P.h) / 2)); return c; });
+    P.w = w; P.h = h; frames.forEach((f, i) => saveFrame(i)); m.close(); fitZoom(); renderFrames(); H.push(); JC.changed();
+  };
+}
+
+/* ---------- exporteren ---------- */
+function scaled(src, s) { const c = newCanvas(P.w * s, P.h * s), x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, c.width, c.height); return c; }
+function exportModal() {
+  const m = JC.modal('<h2>Downloaden</h2><label class="field"><span>Wat wil je downloaden?</span><select class="inp" id="et"><option value="png">PNG van dit frame</option>' + (frames.length > 1 ? '<option value="gif" selected>Bewegende GIF (' + frames.length + ' frames)</option><option value="sheet">Spritesheet (alle frames naast elkaar)</option>' : '') + '</select></label><label class="field"><span>Vergroten</span><select class="inp" id="es">' + [1, 2, 4, 8, 16].map(s => '<option value="' + s + '"' + (s === (P.w <= 32 ? 8 : P.w <= 64 ? 4 : 2) ? ' selected' : '') + '>' + s + '× (' + P.w * s + ' × ' + P.h * s + ')</option>').join('') + '</select></label><p style="font-size:12px">Tip: je kunt deze tekening ook direct gebruiken in <b>Game</b>, zonder te downloaden.</p><div class="foot"><button class="btn sec" data-close>Annuleren</button><button class="btn" id="ego">Downloaden</button></div>');
+  m.querySelector('#ego').onclick = () => {
+    const t = m.querySelector('#et').value, s = +m.querySelector('#es').value, name = JF.safeName(JC.project.title, 'pixel');
+    if (t === 'png') scaled(F(), s).toBlob(b => JF.download(name + '.png', b), 'image/png');
+    if (t === 'sheet') { const c = newCanvas(P.w * s * frames.length, P.h * s), x = c.getContext('2d'); x.imageSmoothingEnabled = false; frames.forEach((f, i) => x.drawImage(f, i * P.w * s, 0, P.w * s, P.h * s)); c.toBlob(b => JF.download(name + '-sheet.png', b), 'image/png'); }
+    if (t === 'gif') { const W = P.w * s, Hh = P.h * s; JF.download(name + '.gif', gif(frames.map(f => scaled(f, s).getContext('2d').getImageData(0, 0, W, Hh)), W, Hh, Math.round(100 / P.fps))); }
+    m.close();
+  };
+}
+/* eenvoudige GIF-maker (LZW) */
+function gif(imgs, w, h, delay) {
+  const map = new Map(), pal = [[0, 0, 0]];
+  let shift = 0; const key = (r, g, b) => ((r >> shift) << 16) | ((g >> shift) << 8) | (b >> shift);
+  for (;;) { map.clear(); pal.length = 1; let ok = true; for (const im of imgs) { const d = im.data; for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 128) continue; const k = key(d[i], d[i + 1], d[i + 2]); if (!map.has(k)) { if (pal.length >= 256) { ok = false; break; } map.set(k, pal.length); pal.push([d[i], d[i + 1], d[i + 2]]); } } if (!ok) break; } if (ok) break; shift++; }
+  const out = []; const b = v => out.push(v & 255), w16 = v => { b(v); b(v >> 8); }, str = s => { for (const c of s) b(c.charCodeAt(0)); };
+  str('GIF89a'); w16(w); w16(h); b(0xf7); b(0); b(0);
+  for (let i = 0; i < 256; i++) { const c = pal[i] || [0, 0, 0]; b(c[0]); b(c[1]); b(c[2]); }
+  b(0x21); b(0xff); b(11); str('NETSCAPE2.0'); b(3); b(1); w16(0); b(0);
+  imgs.forEach(im => {
+    b(0x21); b(0xf9); b(4); b(0x09); w16(delay); b(0); b(0);
+    b(0x2c); w16(0); w16(0); w16(w); w16(h); b(0);
+    const d = im.data, idx = new Uint8Array(w * h); for (let i = 0, j = 0; i < d.length; i += 4, j++) idx[j] = d[i + 3] < 128 ? 0 : map.get(key(d[i], d[i + 1], d[i + 2]));
+    const minCode = 8; b(minCode);
+    const bytes = lzw(idx, minCode);
+    for (let i = 0; i < bytes.length; i += 255) { const n = Math.min(255, bytes.length - i); b(n); for (let k = 0; k < n; k++) out.push(bytes[i + k]); }
+    b(0);
+  });
+  b(0x3b);
+  return new Blob([new Uint8Array(out)], { type: 'image/gif' });
+}
+function lzw(idx, minCode) {
+  const clear = 1 << minCode, eoi = clear + 1; let size = minCode + 1, next = eoi + 1, cur = 0, nb = 0; const out = []; let table = new Map();
+  const emit = c => { cur |= c << nb; nb += size; while (nb >= 8) { out.push(cur & 255); cur >>>= 8; nb -= 8; } };
+  emit(clear); let code = idx[0];
+  for (let i = 1; i < idx.length; i++) {
+    const k = idx[i], kk = code << 8 | k, v = table.get(kk);
+    if (v !== undefined) { code = v; continue; }
+    emit(code);
+    if (next === 4096) { emit(clear); next = eoi + 1; size = minCode + 1; table = new Map(); }
+    else { if (next >= (1 << size)) size++; table.set(kk, next++); }
+    code = k;
+  }
+  emit(code); emit(eoi); if (nb > 0) out.push(cur & 255);
+  return out;
+}
+
+/* ---------- toetsen ---------- */
+document.addEventListener('keydown', e => {
+  if (!P || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || document.querySelector('.modal-bg')) return;
+  const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+  if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? H.redo() : H.undo(); return; }
+  if (mod && k === 'y') { e.preventDefault(); H.redo(); return; }
+  if (mod) return;
+  const t = TOOLS.find(t => t[1].toLowerCase() === k); if (t) { setTool(t[0]); return; }
+  if (k === 'x') { [c1, c2] = [c2, c1]; renderColors(); }
+  if (k === '[') { brush = Math.max(1, brush - 1); $('brush').value = brush; $('brushV').textContent = brush; draw(); }
+  if (k === ']') { brush = Math.min(6, brush + 1); $('brush').value = brush; $('brushV').textContent = brush; draw(); }
+  if (k === ',' || k === 'arrowleft') { cur = (cur - 1 + frames.length) % frames.length; renderFrames(); draw(); }
+  if (k === '.' || k === 'arrowright') { cur = (cur + 1) % frames.length; renderFrames(); draw(); }
+  if (k === ' ') { e.preventDefault(); togglePlay(); }
+});
+
+/* ---------- start ---------- */
+function boot() {
+  P.palette = P.palette || PALETTES.pico.slice(); P.fps = P.fps || 8; c1 = P.palette[P.palette.length > 8 ? 0 : 0];
+  $('fps').value = P.fps; $('fpsV').textContent = P.fps + ' fps';
+  loadFrames().then(() => { renderTools(); renderPalSel(); renderColors(); fitZoom(); renderFrames(); drawPreview(0); H.reset(); });
+}
+window.addEventListener('resize', () => { if (P) fitZoom(); });
+JC.getData = () => P;
+JC.getThumb = () => { const c = newCanvas(P.w, P.h); c.getContext('2d').drawImage(frames[0], 0, 0); const s = Math.max(1, Math.floor(200 / Math.max(P.w, P.h))); const t = newCanvas(Math.round(320), 200), x = t.getContext('2d'); x.fillStyle = '#e8ebf2'; x.fillRect(0, 0, 320, 200); x.imageSmoothingEnabled = false; const dw = P.w * s, dh = P.h * s; x.drawImage(c, (320 - dw) / 2, (200 - dh) / 2, dw, dh); return t.toDataURL('image/png'); };
+$('hdr').innerHTML = JC.header('pixel', '<button class="btn" id="expBtn">Downloaden</button>');
+JC.start({
+  tool: 'pixel', newTitle: 'Mijn sprite',
+  onOpen(p) { $('expBtn').onclick = exportModal; renderTools(); if (p.data && p.data.frames) { P = p.data; boot(); } else sizeModal(); }
+});
+</script>
+</body>
+</html>
