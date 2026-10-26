@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code · jf.hobby</title>
+<link rel="icon" href="logo.svg">
+<script>(function(){var p=localStorage.getItem('jf-theme')||'auto';document.documentElement.dataset.theme=(p==='dark'||(p==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light';})();</script>
+<link rel="stylesheet" href="../jf-core/core.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../jf-core/core.js"></script>
+<script src="lib.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchtags.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/xml-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
+<style>
+:root{--accent:#16a34a;--tint:rgba(22,163,74,.12);--ed:#1e1f24;--edtx:#d7dae0;--edln:#5c6370;--edact:#26272d;--edsel:#3a3d46}
+[data-theme=dark]{--accent:#4ade80;--tint:rgba(74,222,128,.14);--onacc:#052e14;--ed:#141518;--edact:#1c1d21}
+#app{height:100vh;display:grid;grid-template-rows:56px 1fr;overflow:hidden}
+.main{display:grid;grid-template-columns:210px minmax(0,1fr) 6px minmax(0,var(--pw,45%));min-height:0}
+.main.nopre{grid-template-columns:210px minmax(0,1fr) 0 0}
+.main.nopre .pre,.main.nopre .split{display:none}
+.files{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.files .hd{display:flex;align-items:center;gap:4px;padding:10px 10px 6px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.files .hd span{flex:1}
+.files .hd button{border:0;background:none;width:26px;height:26px;border-radius:6px;color:var(--muted);font-size:15px}
+.files .hd button:hover{background:var(--hover);color:var(--text)}
+.flist{flex:1;overflow-y:auto;padding:0 6px 10px}
+.f{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:13px;user-select:none}
+.f:hover{background:var(--hover)}
+.f.on{background:var(--tint);color:var(--accent);font-weight:600}
+.f .n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .x{opacity:0;border:0;background:none;color:var(--muted);width:22px;height:22px;border-radius:5px}
+.f:hover .x{opacity:1}
+.f .x:hover{background:var(--line);color:var(--text)}
+.fi{width:16px;height:16px;border-radius:4px;font-size:8.5px;font-weight:800;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;font-family:system-ui}
+.side-foot{padding:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.side-foot .row{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.side-foot .row span{flex:1}
+.ed{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--ed)}
+.tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;flex:0 0 auto;scrollbar-width:none}
+.tab{display:flex;align-items:center;gap:7px;height:36px;padding:0 6px 0 12px;font-size:13px;border-right:1px solid var(--line);cursor:pointer;white-space:nowrap;color:var(--muted);background:var(--bg)}
+.tab.on{background:var(--ed);color:#fff}
+[data-theme=light] .tab.on{color:var(--edtx)}
+.tab button{border:0;background:none;width:20px;height:20px;border-radius:5px;color:inherit;opacity:.6}
+.tab button:hover{opacity:1;background:rgba(255,255,255,.12)}
+.tab i{width:7px;height:7px;border-radius:50%;background:var(--accent);display:none}
+.tab.dirty i{display:inline-block}
+#editor{flex:1;min-height:0;position:relative}
+.CodeMirror{height:100%;background:var(--ed);color:var(--edtx);font-family:"JetBrains Mono","Fira Code",Consolas,"Cascadia Code",Menlo,monospace;font-size:var(--fs,14px);line-height:1.55}
+.CodeMirror-gutters{background:var(--ed);border-right:0}
+.CodeMirror-linenumber{color:var(--edln);padding:0 12px 0 8px}
+.CodeMirror-cursor{border-left:2px solid #4ade80}
+.CodeMirror-activeline-background{background:var(--edact)}
+.CodeMirror-selected,.CodeMirror-focused .CodeMirror-selected{background:var(--edsel)!important}
+.CodeMirror-matchingbracket{color:#fff!important;background:#3b4048;outline:1px solid #5c6370}
+.CodeMirror-matchingtag{background:rgba(74,222,128,.15)}
+.cm-s-default .cm-keyword{color:#c678dd}.cm-s-default .cm-def{color:#61afef}.cm-s-default .cm-variable{color:#e5c07b}.cm-s-default .cm-variable-2{color:#e06c75}.cm-s-default .cm-variable-3,.cm-s-default .cm-type{color:#e5c07b}.cm-s-default .cm-property{color:#61afef}.cm-s-default .cm-operator{color:#56b6c2}.cm-s-default .cm-number{color:#d19a66}.cm-s-default .cm-string,.cm-s-default .cm-string-2{color:#98c379}.cm-s-default .cm-comment{color:#7f848e;font-style:italic}.cm-s-default .cm-atom{color:#d19a66}.cm-s-default .cm-tag{color:#e06c75}.cm-s-default .cm-attribute{color:#d19a66}.cm-s-default .cm-qualifier{color:#e5c07b}.cm-s-default .cm-builtin{color:#56b6c2}.cm-s-default .cm-bracket{color:#abb2bf}.cm-s-default .cm-meta{color:#abb2bf}.cm-s-default .cm-header{color:#e06c75;font-weight:700}.cm-s-default .cm-link{color:#61afef}
+.CodeMirror-hints{background:#21252b;border:1px solid #3a3f4b;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4);font-family:inherit;font-size:13px;padding:4px;z-index:300}
+.CodeMirror-hint{color:#d7dae0;border-radius:5px;padding:3px 8px}
+li.CodeMirror-hint-active{background:#16a34a;color:#fff}
+.imgview{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;background:repeating-conic-gradient(#2a2b30 0 25%,#222327 0 50%) 0 0/20px 20px}
+.imgview img{max-width:100%;max-height:100%;image-rendering:auto;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.split{cursor:col-resize;background:var(--line)}
+.split:hover,.split.on{background:var(--accent)}
+.pre{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--panel)}
+.pbar{display:flex;align-items:center;gap:4px;padding:6px 8px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.pbar .url{flex:1;height:28px;border-radius:7px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;padding:0 10px;font-size:12px;color:var(--muted);min-width:0;white-space:nowrap;overflow:hidden}
+.tb{height:28px;min-width:28px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:0;background:transparent;border-radius:7px;padding:0 7px;font-size:12px;color:var(--muted)}
+.tb:hover{background:var(--hover);color:var(--text)}
+.tb.on{background:var(--tint);color:var(--accent)}
+.tb svg{width:15px;height:15px}
+.frame{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center;background:var(--bg);overflow:auto}
+.frame iframe{width:100%;height:100%;border:0;background:#fff;display:block}
+.frame.phone iframe{width:375px;height:min(740px,100%);margin:12px auto;border-radius:22px;box-shadow:0 0 0 8px #15161a,0 10px 40px rgba(0,0,0,.3)}
+.frame.tablet iframe{width:768px;max-width:100%;height:100%;box-shadow:0 0 0 1px var(--line)}
+.cons{height:var(--ch,170px);border-top:1px solid var(--line);display:flex;flex-direction:column;flex:0 0 auto;background:var(--panel)}
+.cons.min{height:34px}
+.chd{display:flex;align-items:center;gap:6px;padding:0 6px 0 12px;height:33px;font-size:12px;font-weight:650;flex:0 0 auto;border-bottom:1px solid var(--line)}
+.chd span{flex:1}
+.chd em{font-style:normal;background:var(--danger);color:#fff;border-radius:999px;padding:0 6px;font-size:10px;margin-left:5px}
+.cout{flex:1;overflow-y:auto;font-family:"JetBrains Mono",Consolas,Menlo,monospace;font-size:12px}
+.cl{padding:3px 12px;border-bottom:1px solid var(--line);white-space:pre-wrap;word-break:break-word}
+.cl.error{color:var(--danger);background:rgba(214,51,108,.07)}
+.cl.warn{color:#b7791f;background:rgba(234,179,8,.08)}
+.cl.info{color:var(--muted)}
+.cl.res{color:var(--accent)}
+.cin{display:flex;align-items:center;border-top:1px solid var(--line);flex:0 0 auto}
+.cin b{padding:0 6px 0 12px;color:var(--accent)}
+.cin input{flex:1;height:30px;border:0;background:transparent;outline:none;font-family:"JetBrains Mono",Consolas,monospace;font-size:12px}
+.cons.min .cout,.cons.min .cin{display:none}
+.tpls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tpls button{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.tpls button:hover{border-color:var(--accent);background:var(--tint)}
+.tpls b{font-size:14px}.tpls small{color:var(--muted);font-size:12px}
+.tpls .e{font-size:24px}
+/* bekijken (gedeeld) */
+#viewer{position:fixed;inset:0;display:flex;flex-direction:column;background:#fff}
+#viewer .vb{height:40px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#15161a;color:#fff;font-size:13px}
+#viewer .vb a{color:#4ade80;text-decoration:none;font-weight:600}
+#viewer iframe{flex:1;border:0;width:100%}
+@media(max-width:860px){.main{grid-template-columns:0 minmax(0,1fr) 0 0}.main .files,.main .split{display:none}.main.showpre{grid-template-columns:0 0 0 1fr}.main.showpre .ed{display:none}.main.showpre .pre{display:flex}.main .pre{display:none}#mobPre{display:inline-flex!important}}
+</style>
+</head>
+<body>
+<div class="boot" id="boot"></div>
+<div id="app" class="jf-hidden">
+  <div id="hdr"></div>
+  <div class="main" id="main">
+    <aside class="files">
+      <div class="hd"><span>Bestanden</span><button id="newFile" title="Nieuw bestand">+</button><button id="addImg" title="Afbeelding toevoegen">🖼</button></div>
+      <div class="flist" id="flist"></div>
+      <div class="side-foot">
+        <div class="row"><span>Lettergrootte</span><button class="tb" id="fsDn">A−</button><button class="tb" id="fsUp">A+</button></div>
+        <div class="row"><span>Regels afbreken</span><button class="tb" id="wrap">Uit</button></div>
+        <div class="row"><span>Automatisch vernieuwen</span><button class="tb on" id="auto">Aan</button></div>
+      </div>
+    </aside>
+    <section class="ed">
+      <div class="tabs" id="tabs"></div>
+      <div id="editor"></div>
+      <div class="imgview hidden" id="imgview"><img id="imgEl" alt=""></div>
+    </section>
+    <div class="split" id="split"></div>
+    <section class="pre">
+      <div class="pbar">
+        <button class="tb" id="refresh" title="Vernieuwen (Ctrl+Enter)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 12a8 8 0 11-2.3-5.7M20 4v5h-5"/></svg></button>
+        <div class="url" id="url">index.html</div>
+        <button class="tb on" data-dev="full" title="Volledig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
+        <button class="tb" data-dev="tablet" title="Tablet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M11 18h2"/></svg></button>
+        <button class="tb" data-dev="phone" title="Telefoon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></button>
+        <button class="tb" id="openTab" title="Openen in nieuw tabblad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg></button>
+      </div>
+      <div class="frame" id="frame"><iframe id="pv" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock allow-popups" title="Voorbeeld"></iframe></div>
+      <div class="cons" id="cons">
+        <div class="chd"><span>Console<em id="errN" class="hidden">0</em></span><button class="tb" id="clr" title="Wissen">Wissen</button><button class="tb" id="cmin" title="In- of uitklappen">▾</button></div>
+        <div class="cout" id="cout"></div>
+        <div class="cin"><b>›</b><input id="cinp" placeholder="Typ JavaScript en druk op Enter" spellcheck="false" autocomplete="off"></div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+'use strict';
+const $ = JF.$, esc = JF.esc;
+const TYPES = { html: ['#e34c26', 'H'], htm: ['#e34c26', 'H'], css: ['#2965f1', 'C'], js: ['#d4b106', 'JS'], json: ['#8b5cf6', '{}'], md: ['#64748b', 'M'], txt: ['#64748b', 'T'], svg: ['#f97316', 'S'], png: ['#16a34a', 'IMG'], jpg: ['#16a34a', 'IMG'], jpeg: ['#16a34a', 'IMG'], gif: ['#16a34a', 'IMG'], webp: ['#16a34a', 'IMG'] };
+const ext = n => (n.split('.').pop() || '').toLowerCase();
+const isImg = n => /^(png|jpe?g|gif|webp)$/.test(ext(n));
+const modeFor = n => ({ html: 'htmlmixed', htm: 'htmlmixed', css: 'css', js: 'javascript', json: { name: 'javascript', json: true }, md: 'markdown', svg: 'xml' })[ext(n)] || 'text/plain';
+function ficon(n) { const t = TYPES[ext(n)] || ['#94a3b8', '•']; return '<span class="fi" style="background:' + t[0] + ';font-size:' + (t[1].length > 2 ? '6.5px' : t[1].length > 1 ? '7.5px' : '9px') + '">' + t[1] + '</span>'; }
+
+const TEMPLATES = {
+  leeg: { n: 'Leeg', e: '📄', d: 'Alleen een index.html', files: { 'index.html': '<!DOCTYPE html>\n<html lang="nl">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>Mijn pagina</title>\n</head>\n<body>\n  <h1>Hallo wereld!</h1>\n</body>\n</html>\n' } },
+  site: { n: 'Website', e: '🌐', d: 'HTML, CSS en JavaScript', files: {
+    'index.html': '<!DOCTYPE html>\n<html lang="nl">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title>Mijn website</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <header>\n    <h1>Mijn website</h1>\n    <nav><a href="#over">Over mij</a> <a href="#projecten">Projecten</a></nav>\n  </header>\n  <main>\n    <section id="over">\n      <h2>Over mij</h2>\n      <p>Hoi! Ik maak websites, games en nog veel meer.</p>\n      <button id="knop">Klik mij</button>\n      <p id="teller">Je hebt 0 keer geklikt.</p>\n    </section>\n    <section id="projecten">\n      <h2>Projecten</h2>\n      <ul>\n        <li>Een Roblox-game</li>\n        <li>Een eigen office-suite</li>\n      </ul>\n    </section>\n  </main>\n  <script src="script.js"><\/script>\n</body>\n</html>\n',
+    'style.css': '* { box-sizing: border-box; }\n\nbody {\n  margin: 0;\n  font-family: system-ui, sans-serif;\n  background: #f4f4f8;\n  color: #15161a;\n}\n\nheader {\n  background: linear-gradient(135deg, #22c55e, #3b82f6);\n  color: white;\n  padding: 40px 24px;\n}\n\nnav a {\n  color: white;\n  margin-right: 16px;\n}\n\nmain {\n  max-width: 720px;\n  margin: 0 auto;\n  padding: 24px;\n}\n\nsection {\n  background: white;\n  border-radius: 14px;\n  padding: 20px 24px;\n  margin-bottom: 16px;\n}\n\nbutton {\n  background: #22c55e;\n  color: white;\n  border: 0;\n  border-radius: 10px;\n  padding: 10px 18px;\n  font-size: 16px;\n  cursor: pointer;\n}\n\nbutton:hover {\n  filter: brightness(1.1);\n}\n',
+    'script.js': '// Dit wordt uitgevoerd als de pagina laadt\nlet klikken = 0;\n\nconst knop = document.getElementById(\'knop\');\nconst teller = document.getElementById(\'teller\');\n\nknop.addEventListener(\'click\', () => {\n  klikken++;\n  teller.textContent = \'Je hebt \' + klikken + \' keer geklikt.\';\n  console.log(\'Klik nummer\', klikken);\n});\n' } },
+  game: { n: 'Spelletje', e: '🎮', d: 'Canvas-game met toetsenbord', files: {
+    'index.html': '<!DOCTYPE html>\n<html lang="nl">\n<head>\n  <meta charset="UTF-8">\n  <title>Vang de munten</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <canvas id="spel" width="480" height="320"></canvas>\n  <p>Gebruik de pijltjestoetsen. Score: <b id="score">0</b></p>\n  <script src="game.js"><\/script>\n</body>\n</html>\n',
+    'style.css': 'body {\n  margin: 0;\n  min-height: 100vh;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  background: #0f172a;\n  color: white;\n  font-family: system-ui, sans-serif;\n}\n\ncanvas {\n  background: #1e293b;\n  border-radius: 12px;\n  max-width: 100%;\n}\n',
+    'game.js': 'const canvas = document.getElementById(\'spel\');\nconst ctx = canvas.getContext(\'2d\');\nconst scoreEl = document.getElementById(\'score\');\n\nconst speler = { x: 220, y: 140, grootte: 30, snelheid: 4 };\nlet munt = nieuweMunt();\nlet score = 0;\nconst toetsen = {};\n\ndocument.addEventListener(\'keydown\', e => { toetsen[e.key] = true; });\ndocument.addEventListener(\'keyup\', e => { toetsen[e.key] = false; });\n\nfunction nieuweMunt() {\n  return { x: Math.random() * 440 + 20, y: Math.random() * 280 + 20 };\n}\n\nfunction update() {\n  if (toetsen.ArrowLeft) speler.x -= speler.snelheid;\n  if (toetsen.ArrowRight) speler.x += speler.snelheid;\n  if (toetsen.ArrowUp) speler.y -= speler.snelheid;\n  if (toetsen.ArrowDown) speler.y += speler.snelheid;\n\n  // binnen het scherm blijven\n  speler.x = Math.max(0, Math.min(canvas.width - speler.grootte, speler.x));\n  speler.y = Math.max(0, Math.min(canvas.height - speler.grootte, speler.y));\n\n  // munt gepakt?\n  const dx = speler.x + 15 - munt.x, dy = speler.y + 15 - munt.y;\n  if (Math.hypot(dx, dy) < 26) {\n    score++;\n    scoreEl.textContent = score;\n    munt = nieuweMunt();\n  }\n}\n\nfunction teken() {\n  ctx.clearRect(0, 0, canvas.width, canvas.height);\n  ctx.fillStyle = \'#facc15\';\n  ctx.beginPath();\n  ctx.arc(munt.x, munt.y, 10, 0, Math.PI * 2);\n  ctx.fill();\n  ctx.fillStyle = \'#22c55e\';\n  ctx.fillRect(speler.x, speler.y, speler.grootte, speler.grootte);\n}\n\nfunction loop() {\n  update();\n  teken();\n  requestAnimationFrame(loop);\n}\nloop();\n' } },
+  anim: { n: 'Animatie', e: '✨', d: 'Bewegende CSS-kunst', files: {
+    'index.html': '<!DOCTYPE html>\n<html lang="nl">\n<head>\n  <meta charset="UTF-8">\n  <title>Animatie</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <div class="zon"></div>\n  <div class="planeet"><div class="maan"></div></div>\n</body>\n</html>\n',
+    'style.css': 'body {\n  margin: 0;\n  height: 100vh;\n  display: grid;\n  place-items: center;\n  background: radial-gradient(circle, #1e1b4b, #020617);\n  overflow: hidden;\n}\n\n.zon {\n  width: 90px;\n  height: 90px;\n  border-radius: 50%;\n  background: #facc15;\n  box-shadow: 0 0 60px #f97316;\n  grid-area: 1 / 1;\n}\n\n.planeet {\n  width: 300px;\n  height: 300px;\n  grid-area: 1 / 1;\n  animation: draai 6s linear infinite;\n}\n\n.planeet::before {\n  content: "";\n  position: absolute;\n  width: 34px;\n  height: 34px;\n  border-radius: 50%;\n  background: #3b82f6;\n}\n\n.maan {\n  position: absolute;\n  left: 40px;\n  top: 10px;\n  width: 10px;\n  height: 10px;\n  border-radius: 50%;\n  background: #e2e8f0;\n}\n\n@keyframes draai {\n  to { transform: rotate(360deg); }\n}\n' } }
+};
+
+let P = null, curFile = null, tabsOpen = [], autoRun = true, cm = null, docs = {}, dev = 'full';
+const errCount = { n: 0 };
+
+/* ---------- editor ---------- */
+function makeEditor() {
+  cm = CodeMirror($('editor'), {
+    lineNumbers: true, tabSize: 2, indentUnit: 2, smartIndent: true, lineWrapping: false,
+    autoCloseBrackets: true, autoCloseTags: true, matchBrackets: true, matchTags: { bothTags: true }, styleActiveLine: true,
+    extraKeys: {
+      'Ctrl-Space': 'autocomplete', 'Ctrl-/': 'toggleComment', 'Cmd-/': 'toggleComment',
+      'Ctrl-Enter': () => run(true), 'Cmd-Enter': () => run(true),
+      'Ctrl-S': () => JC.saveNow(), 'Cmd-S': () => JC.saveNow(),
+      Tab: c => { if (c.somethingSelected()) c.indentSelection('add'); else c.replaceSelection('  ', 'end'); },
+      'Shift-Tab': c => c.indentSelection('subtract')
+    }
+  });
+  cm.on('inputRead', (c, ch) => {
+    if (!ch.text[0] || ch.origin === 'paste') return; const t = ch.text[0], m = c.getMode().name, inner = c.getModeAt(c.getCursor()).name;
+    if ((inner === 'css' && /[a-z-]/i.test(t)) || (inner === 'javascript' && /[a-z.]/i.test(t) && false) || ((m === 'htmlmixed' || inner === 'xml') && t === '<')) c.showHint({ completeSingle: false });
+  });
+}
+function openFile(n) {
+  const f = P.files.find(x => x.name === n); if (!f) return;
+  curFile = n; if (!tabsOpen.includes(n)) tabsOpen.push(n);
+  if (isImg(n)) { $('editor').classList.add('hidden'); $('imgview').classList.remove('hidden'); $('imgEl').src = f.data; }
+  else {
+    $('imgview').classList.add('hidden'); $('editor').classList.remove('hidden');
+    if (!docs[n]) { const d = docs[n] = CodeMirror.Doc(f.text || '', modeFor(n)); d.on('change', () => { f.text = d.getValue(); JC.changed(); schedule(); }); }
+    cm.swapDoc(docs[n]); setTimeout(() => { cm.refresh(); cm.focus(); }, 0);
+  }
+  if (/\.html?$/.test(n)) { P.entry = n; }
+  renderFiles(); renderTabs(); if (/\.html?$/.test(n)) run();
+}
+function renderFiles() {
+  const l = P.files.slice().sort((a, b) => (a.name === 'index.html' ? -1 : b.name === 'index.html' ? 1 : a.name.localeCompare(b.name)));
+  $('flist').innerHTML = l.map(f => '<div class="f' + (f.name === curFile ? ' on' : '') + '" data-f="' + esc(f.name) + '">' + ficon(f.name) + '<span class="n">' + esc(f.name) + '</span><button class="x" data-ren="' + esc(f.name) + '" title="Naam wijzigen">✎</button><button class="x" data-del="' + esc(f.name) + '" title="Verwijderen">×</button></div>').join('');
+}
+function renderTabs() {
+  tabsOpen = tabsOpen.filter(n => P.files.some(f => f.name === n));
+  $('tabs').innerHTML = tabsOpen.map(n => '<div class="tab' + (n === curFile ? ' on' : '') + '" data-t="' + esc(n) + '">' + ficon(n) + esc(n) + '<button data-close="' + esc(n) + '" title="Sluiten">×</button></div>').join('');
+}
+$('flist').onclick = e => {
+  const d = e.target.closest('[data-del]'), r = e.target.closest('[data-ren]'), f = e.target.closest('[data-f]');
+  if (d) { e.stopPropagation(); const n = d.dataset.del; if (P.files.length === 1) return JF.toast('Je project moet minstens 1 bestand hebben'); if (!confirm(n + ' verwijderen?')) return; P.files = P.files.filter(x => x.name !== n); delete docs[n]; tabsOpen = tabsOpen.filter(x => x !== n); if (curFile === n) openFile((P.files.find(x => x.name === 'index.html') || P.files[0]).name); else { renderFiles(); renderTabs(); } JC.changed(); run(); return; }
+  if (r) { e.stopPropagation(); const n = r.dataset.ren, nn = askName(n); if (!nn || nn === n) return; const fl = P.files.find(x => x.name === n); fl.name = nn; if (docs[n]) { if (curFile === n) cm.swapDoc(CodeMirror.Doc('')); delete docs[n]; } if (P.entry === n) P.entry = nn; tabsOpen = tabsOpen.map(x => x === n ? nn : x); if (curFile === n) curFile = null; openFile(nn); JC.changed(); return; }
+  if (f) openFile(f.dataset.f);
+};
+$('tabs').onclick = e => {
+  const c = e.target.closest('[data-close]'); if (c) { e.stopPropagation(); const n = c.dataset.close; tabsOpen = tabsOpen.filter(x => x !== n); if (curFile === n) { const nx = tabsOpen[tabsOpen.length - 1] || (P.files.find(x => x.name === 'index.html') || P.files[0]).name; curFile = null; openFile(nx); } else renderTabs(); return; }
+  const t = e.target.closest('[data-t]'); if (t) openFile(t.dataset.t);
+};
+function askName(old) {
+  let n = prompt(old ? 'Nieuwe naam:' : 'Naam van het nieuwe bestand (bijvoorbeeld pagina2.html, extra.css of spel.js):', old || ''); if (!n) return null;
+  n = n.trim().replace(/[\\/:*?"<>|\s]+/g, '-'); if (!n) return null;
+  if (!/\./.test(n)) n += '.js';
+  if (P.files.some(f => f.name.toLowerCase() === n.toLowerCase() && n !== old)) { alert('Er bestaat al een bestand met die naam.'); return null; }
+  return n;
+}
+$('newFile').onclick = () => {
+  const n = askName(); if (!n) return;
+  const starter = { html: '<!DOCTYPE html>\n<html lang="nl">\n<head>\n  <meta charset="UTF-8">\n  <title></title>\n</head>\n<body>\n  \n</body>\n</html>\n', css: '/* ' + n + ' */\n', js: '// ' + n + '\n' }[ext(n)] || '';
+  P.files.push({ name: n, text: starter }); openFile(n); JC.changed();
+};
+$('addImg').onclick = async () => {
+  const fs = await JC.pickFile('image/*', true);
+  for (const f of fs) {
+    try { const u = await JC.readImage(f, 1400); let n = f.name.replace(/[^\w.\-]+/g, '-').toLowerCase(); if (!isImg(n)) n = n.replace(/\.\w+$/, '') + (/png/.test(u.src.slice(0, 20)) ? '.png' : '.jpg'); while (P.files.some(x => x.name === n)) n = n.replace(/(\.\w+)$/, '-1$1'); P.files.push({ name: n, data: u.src }); JF.toast('Toegevoegd als ' + n + '. Gebruik <img src="' + n + '">'); openFile(n); } catch (e) { JF.toast('Deze afbeelding kon niet worden gelezen'); }
+  }
+  JC.changed(); run();
+};
+
+/* ---------- voorbeeld bouwen ---------- */
+const BRIDGE = '<script>(function(){var P=parent;function s(v){try{if(v instanceof Error)return v.name+": "+v.message;if(typeof v==="object"&&v!==null){if(v instanceof Node)return "<"+(v.nodeName||"").toLowerCase()+">";return JSON.stringify(v,null,1)}return String(v)}catch(e){return String(v)}}["log","info","warn","error","debug"].forEach(function(k){var o=console[k];console[k]=function(){try{P.postMessage({__jc:1,t:k,a:[].map.call(arguments,s).join(" ")},"*")}catch(e){}o&&o.apply(console,arguments)}});window.addEventListener("error",function(e){P.postMessage({__jc:1,t:"error",a:(e.message||"Fout")+(e.lineno?"  (regel "+e.lineno+")":"")},"*")});window.addEventListener("unhandledrejection",function(e){P.postMessage({__jc:1,t:"error",a:"Promise: "+s(e.reason)},"*")});window.addEventListener("message",function(e){if(e.data&&e.data.__jcEval!=null){try{var r=(0,eval)(e.data.__jcEval);P.postMessage({__jc:1,t:"res",a:s(r)},"*")}catch(x){P.postMessage({__jc:1,t:"error",a:x.name+": "+x.message},"*")}}});document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a)return;var h=a.getAttribute("href");if(/^[\\w\\-.\\/]+\\.html?$/.test(h)){e.preventDefault();P.postMessage({__jc:1,t:"nav",a:h},"*")}})})();<\/script>';
+function build(entry, files, bridge) {
+  const map = {}; files.forEach(f => { map[f.name] = f; map['./' + f.name] = f; });
+  const f = map[entry] || files.find(x => /\.html?$/.test(x.name));
+  if (!f) return '<p style="font-family:system-ui;padding:20px;color:#888">Maak een index.html om je pagina te zien.</p>';
+  let h = f.text || '';
+  const asset = src => { const a = map[src]; if (!a) return null; return a.data || ('data:' + ({ css: 'text/css', js: 'text/javascript', svg: 'image/svg+xml', json: 'application/json' }[ext(a.name)] || 'text/plain') + ';charset=utf-8,' + encodeURIComponent(a.text || '')); };
+  h = h.replace(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/gi, (m, href) => { const a = map[href]; if (a && ext(a.name) === 'css' && /stylesheet/i.test(m)) return '<style data-file="' + esc(a.name) + '">\n' + (a.text || '') + '\n</style>'; return m; });
+  h = h.replace(/<script\b([^>]*)\bsrc=["']([^"']+)["']([^>]*)>\s*<\/script>/gi, (m, pre, src, post) => { const a = map[src]; if (a && ext(a.name) === 'js') return '<script' + pre + post + '>\n' + (a.text || '').replace(/<\/script/gi, '<\\/script') + '\n//# sourceURL=' + a.name + '\n<\/script>'; return m; });
+  h = h.replace(/\b(src|href|poster)=["']([^"':]+\.(?:png|jpe?g|gif|webp|svg))["']/gi, (m, at, src) => { const u = asset(src); return u ? at + '="' + u + '"' : m; });
+  h = h.replace(/url\(\s*["']?([^"')]+\.(?:png|jpe?g|gif|webp|svg))["']?\s*\)/gi, (m, src) => { const u = asset(src); return u ? 'url("' + u + '")' : m; });
+  if (bridge) { if (/<head[^>]*>/i.test(h)) h = h.replace(/<head[^>]*>/i, m => m + BRIDGE); else h = BRIDGE + h; }
+  return h;
+}
+let runTimer = null;
+function schedule() { if (!autoRun) return; clearTimeout(runTimer); runTimer = setTimeout(() => run(), 700); }
+function run(force) {
+  clearTimeout(runTimer); if (!P) return;
+  if (force) clearConsole();
+  const entry = P.entry && P.files.some(f => f.name === P.entry) ? P.entry : 'index.html';
+  $('url').textContent = entry; errCount.n = 0; updErr();
+  $('pv').srcdoc = build(entry, P.files, true);
+}
+window.addEventListener('message', e => {
+  if (e.source !== $('pv').contentWindow || !e.data || !e.data.__jc) return;
+  if (e.data.t === 'nav') { if (P.files.some(f => f.name === e.data.a)) { P.entry = e.data.a; run(); } return; }
+  log(e.data.t, e.data.a);
+});
+function log(t, a) {
+  const d = document.createElement('div'); d.className = 'cl ' + (t === 'error' ? 'error' : t === 'warn' ? 'warn' : t === 'info' || t === 'debug' ? 'info' : t === 'res' ? 'res' : '');
+  d.textContent = (t === 'res' ? '← ' : '') + a; const o = $('cout'); o.appendChild(d);
+  while (o.children.length > 400) o.firstChild.remove();
+  o.scrollTop = o.scrollHeight;
+  if (t === 'error') { errCount.n++; updErr(); }
+}
+function updErr() { $('errN').textContent = errCount.n; $('errN').classList.toggle('hidden', !errCount.n); }
+function clearConsole() { $('cout').innerHTML = ''; errCount.n = 0; updErr(); }
+$('clr').onclick = clearConsole;
+$('cmin').onclick = () => { $('cons').classList.toggle('min'); $('cmin').textContent = $('cons').classList.contains('min') ? '▴' : '▾'; };
+const hist = []; let hi = 0;
+$('cinp').onkeydown = e => {
+  if (e.key === 'Enter' && e.target.value.trim()) { const v = e.target.value; hist.push(v); hi = hist.length; log('log', '› ' + v); $('pv').contentWindow.postMessage({ __jcEval: v }, '*'); e.target.value = ''; }
+  if (e.key === 'ArrowUp' && hi > 0) { hi--; e.target.value = hist[hi]; e.preventDefault(); }
+  if (e.key === 'ArrowDown') { hi = Math.min(hist.length, hi + 1); e.target.value = hist[hi] || ''; e.preventDefault(); }
+};
+$('refresh').onclick = () => run(true);
+document.querySelectorAll('[data-dev]').forEach(b => b.onclick = () => { dev = b.dataset.dev; document.querySelectorAll('[data-dev]').forEach(x => x.classList.toggle('on', x === b)); $('frame').className = 'frame ' + (dev === 'full' ? '' : dev); });
+$('openTab').onclick = () => { const u = URL.createObjectURL(new Blob([build(P.entry || 'index.html', P.files, false)], { type: 'text/html' })); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); };
+
+/* ---------- instellingen ---------- */
+function applySettings() {
+  const s = P.settings = Object.assign({ fs: 14, wrap: false }, P.settings || {});
+  document.documentElement.style.setProperty('--fs', s.fs + 'px'); cm.setOption('lineWrapping', !!s.wrap); $('wrap').textContent = s.wrap ? 'Aan' : 'Uit'; $('wrap').classList.toggle('on', !!s.wrap);
+  $('auto').textContent = autoRun ? 'Aan' : 'Uit'; $('auto').classList.toggle('on', autoRun); cm.refresh();
+}
+$('fsUp').onclick = () => { P.settings.fs = Math.min(24, P.settings.fs + 1); applySettings(); JC.changed(); };
+$('fsDn').onclick = () => { P.settings.fs = Math.max(10, P.settings.fs - 1); applySettings(); JC.changed(); };
+$('wrap').onclick = () => { P.settings.wrap = !P.settings.wrap; applySettings(); JC.changed(); };
+$('auto').onclick = () => { autoRun = !autoRun; applySettings(); if (autoRun) run(); };
+
+/* ---------- splitser ---------- */
+$('split').onpointerdown = e => {
+  e.preventDefault(); $('split').setPointerCapture(e.pointerId); $('split').classList.add('on'); $('pv').style.pointerEvents = 'none';
+  const r = $('main').getBoundingClientRect();
+  $('split').onpointermove = ev => { const w = Math.max(220, Math.min(r.width - 420, r.right - ev.clientX)); $('main').style.setProperty('--pw', w + 'px'); };
+  $('split').onpointerup = () => { $('split').onpointermove = null; $('split').classList.remove('on'); $('pv').style.pointerEvents = ''; cm.refresh(); };
+};
+
+/* ---------- downloaden en delen ---------- */
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+async function downloadZip() {
+  try {
+    if (!window.JSZip) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    const z = new JSZip();
+    P.files.forEach(f => { if (f.data) z.file(f.name, f.data.split(',')[1], { base64: true }); else z.file(f.name, f.text || ''); });
+    JF.download(JF.safeName(JC.project.title, 'project') + '.zip', await z.generateAsync({ type: 'blob' }));
+  } catch (e) { alert('Downloaden lukte niet.'); }
+}
+async function share() {
+  const m = JC.modal('<h2>Delen</h2><p>Iedereen met deze link kan je project bekijken en de code zien. Wijzigingen die je later maakt zijn ook te zien.</p><div class="copy-row"><input class="inp" id="shl" readonly value="Link maken..."><button class="btn" id="shc">Kopiëren</button></div><div class="foot"><button class="btn sec" data-close>Sluiten</button></div>');
+  try {
+    await JC.saveNow();
+    const u = await JC.shareUrl('code', JC.project.id);
+    const link = location.origin + location.pathname + '?view=' + encodeURIComponent(u);
+    m.querySelector('#shl').value = link;
+    m.querySelector('#shc').onclick = () => { m.querySelector('#shl').select(); navigator.clipboard.writeText(link).then(() => JF.toast('Link gekopieerd')).catch(() => document.execCommand('copy')); };
+  } catch (e) { m.querySelector('#shl').value = 'Delen lukte niet: ' + JF.vertaal(e && e.message); }
+}
+
+/* ---------- nieuw project ---------- */
+function templateModal() {
+  const m = JC.modal('<h2>Nieuw code-project</h2><p>Kies waarmee je wilt beginnen.</p><div class="tpls">' + Object.keys(TEMPLATES).map(k => { const t = TEMPLATES[k]; return '<button data-tp="' + k + '"><span class="e">' + t.e + '</span><b>' + t.n + '</b><small>' + t.d + '</small></button>'; }).join('') + '</div>');
+  let chosen = false;
+  const go = k => { chosen = true; m.close(); const t = TEMPLATES[k]; P = { files: Object.keys(t.files).map(n => ({ name: n, text: t.files[n] })), entry: 'index.html', settings: { fs: 14, wrap: false } }; if (JC.project.title === 'Naamloos project') { JC.project.title = t.n === 'Leeg' ? 'Mijn project' : 'Mijn ' + t.n.toLowerCase(); $('jcTitle').value = JC.project.title; } boot(); JC.changed(); };
+  m.onclick = e => { const b = e.target.closest('[data-tp]'); if (b) go(b.dataset.tp); };
+  m.addEventListener('mousedown', e => { if (e.target === m && !chosen) setTimeout(() => go('site'), 0); });
+}
+function boot() {
+  docs = {}; tabsOpen = []; curFile = null;
+  applySettings();
+  const first = P.files.find(f => f.name === 'index.html') || P.files[0];
+  P.files.filter(f => f !== first && !isImg(f.name)).slice(0, 2).forEach(f => tabsOpen.push(f.name));
+  openFile(first.name); run(true);
+}
+JC.getData = () => P;
+JC.getThumb = () => {
+  const c = document.createElement('canvas'); c.width = 320; c.height = 200; const x = c.getContext('2d');
+  x.fillStyle = '#1e1f24'; x.fillRect(0, 0, 320, 200); x.fillStyle = '#16a34a'; x.fillRect(0, 0, 320, 4);
+  const f = P.files.find(f => f.name === (curFile && !isImg(curFile) ? curFile : 'index.html')) || P.files[0];
+  const lines = (f.text || '').split('\n').slice(0, 13); x.font = '11px Consolas, monospace';
+  const cols = ['#c678dd', '#e06c75', '#98c379', '#61afef', '#d19a66', '#abb2bf'];
+  lines.forEach((l, i) => { x.fillStyle = '#5c6370'; x.fillText(String(i + 1).padStart(2), 8, 22 + i * 14); let cx = 30; l.slice(0, 44).split(/(\s+)/).forEach((w, j) => { x.fillStyle = /^\s+$/.test(w) ? '#000' : cols[(w.length + j) % cols.length]; x.fillText(w, cx, 22 + i * 14); cx += x.measureText(w).width; }); });
+  return c.toDataURL('image/jpeg', 0.8);
+};
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(true); } });
+
+$('hdr').innerHTML = JC.header('code', '<button class="icon-btn" id="mobPre" style="display:none">Voorbeeld</button><button class="icon-btn" id="runBtn" title="Uitvoeren (Ctrl+Enter)">▶ <span class="jc-hide-s">Uitvoeren</span></button><button class="icon-btn" id="togglePre" title="Voorbeeld tonen of verbergen"><span class="jc-hide-s">Voorbeeld</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4v16"/></svg></button><button class="icon-btn jc-hide-s" id="zipBtn">Downloaden</button><button class="btn" id="shareBtn">Delen</button>');
+JC.start({
+  tool: 'code', newTitle: 'Naamloos project', publicParam: 'view',
+  onPublic(url) {
+    document.body.innerHTML = '<div id="viewer"><div class="vb"><b>' + JC.logo().replace('class="jc-logo"', 'width="22" height="22" style="border-radius:5px"') + '</b><span id="vt" style="flex:1">Laden...</span><a href="./">Zelf maken met jf.hobby</a></div><iframe id="vf" sandbox="allow-scripts allow-modals allow-forms allow-pointer-lock allow-popups"></iframe></div>';
+    fetch(url).then(r => { if (!r.ok) throw 0; return r.json(); }).then(p => { $('vt').textContent = p.title || 'Project'; document.title = (p.title || 'Project') + ' · jf.hobby'; $('vf').srcdoc = build(p.data.entry || 'index.html', p.data.files, false); })
+      .catch(() => { $('vt').textContent = 'Dit project kon niet worden geladen. Misschien is de link verlopen.'; });
+  },
+  onOpen(p) {
+    makeEditor();
+    $('runBtn').onclick = () => run(true); $('shareBtn').onclick = share; $('zipBtn').onclick = downloadZip;
+    $('togglePre').onclick = () => { $('main').classList.toggle('nopre'); setTimeout(() => cm.refresh(), 0); };
+    $('mobPre').onclick = () => { $('main').classList.toggle('showpre'); $('mobPre').textContent = $('main').classList.contains('showpre') ? 'Code' : 'Voorbeeld'; cm.refresh(); };
+    if (p.data && p.data.files) { P = p.data; boot(); } else templateModal();
+  }
+});
+</script>
+</body>
+</html>
